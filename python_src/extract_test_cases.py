@@ -76,7 +76,13 @@ def docx_to_text(filepath):
             tbl = Table(child, doc)
             for row in tbl.rows:
                 cells = [cell.text.replace('\n', ' ').strip() for cell in row.cells]
-                lines.append('| ' + ' | '.join(cells) + ' |')
+                # Word repeats cell text for every column a merged cell spans.
+                # Deduplicate consecutive identical values to get the logical columns.
+                deduped = [cells[0]]
+                for c in cells[1:]:
+                    if c != deduped[-1]:
+                        deduped.append(c)
+                lines.append('| ' + ' | '.join(deduped) + ' |')
             lines.append('')  # blank line after table
 
     return '\n'.join(lines)
